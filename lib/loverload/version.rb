@@ -1,0 +1,3 @@
+module Loverload
+  VERSION = "0.0.1"
+end
