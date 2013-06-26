@@ -165,4 +165,46 @@ describe Loverload do
     dummy.method_2.should eql 'method_2'
     dummy.method_2(1).should eql 'method_2 with arg'
   end
+
+  it "can overload class methods" do
+    class Dummy
+      include Loverload
+
+      def_overload self, :hello do
+        with_params do
+          "Hello Nobody"
+        end
+
+        with_params do |name|
+          "Hello #{ name }"
+        end
+
+        with_params do |name, age|
+          "Hello #{ name } Age #{ age }"
+        end
+      end
+    end
+
+    Dummy.hello.should eql 'Hello Nobody'
+    Dummy.hello('Teja').should eql 'Hello Teja'
+    Dummy.hello('Teja', 21).should eql 'Hello Teja Age 21'
+  end
+
+  it "can call another class methods" do
+    class Dummy
+      include Loverload
+
+      def self.hello_nobody
+        "Hello Nobody"
+      end
+
+      def_overload self, :hello do
+        with_params do
+          hello_nobody
+        end
+      end
+    end
+
+    Dummy.hello.should eql 'Hello Nobody'
+  end
 end

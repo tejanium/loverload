@@ -1,8 +1,11 @@
 module Loverload
   class Method
-    def initialize klass, method_name, &with_params_block
-      @klass       = klass
-      @method_name = method_name
+    def initialize klass, method_name, class_method = false, &with_params_block
+      @klass          = klass
+      @method_name    = method_name
+      @method_definer = class_method ? :define_singleton_method : :define_method
+      @alias_target   = class_method ? (class << @klass; self; end) : @klass
+
       instance_eval(&with_params_block)
     end
 
@@ -11,14 +14,14 @@ module Loverload
       method_name  = "__name_#{ default }_#{ type_signature(pars) }"
       method_alias = "__alias_#{ default }_#{ alias_signature(pars) }"
 
-      @klass.define_method method_name do |*args|
+      @klass.send @method_definer, method_name do |*args|
         instance_exec(*args, &block)
       end
 
-      @klass.send :alias_method, method_alias, method_name
-      @klass.send :alias_method, default, method_name
+      @alias_target.send :alias_method, method_alias, method_name
+      @alias_target.send :alias_method, default, method_name
 
-      [default, method_name, method_alias].each{ |m| @klass.send :private, m }
+      [default, method_name, method_alias].each{ |m| @alias_target.send :private, m }
     end
 
     def overload instance, *args
