@@ -140,6 +140,9 @@ dummy.before_save('string') #=> "Puke rainbow, leprechaun, and gold"
 ## TODO
 - Make it less ugly
 
+## NOTES
+Couple weeks ago, while searching for the same library, I found yanked gem called [overload](http://rubygems.org/gems/overload) from 2009, it's such an coincidence that we used similar implementation, inside it's readme, the author mentioned [functor](https://github.com/waves/functor), similar gem with different approach. Then I decided to change __loverload__ implementation using __functor__ approach, an simple but expensive approach.
+
 ## Contributing
 
 1. Fork it
