@@ -20,7 +20,7 @@ module Loverload
       def find *args
         dictionary.find do |signature, _|
           match? signature, method_signature(args.size, *args)
-        end.last
+        end.tap{ |arr| raise NoMethodError unless arr }.last
       end
 
       def match? signature, args

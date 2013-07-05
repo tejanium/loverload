@@ -137,8 +137,55 @@ dummy.before_save(proc{|this| is proc}) #=> "Puke rainbow and leprechaun"
 dummy.before_save('string') #=> "Puke rainbow, leprechaun, and gold"
 ```
 
+It also support __functor__ 'guard' arguments
+``` ruby
+class Dummy
+  include Loverload
+
+  def_overload :hello do
+    with_params ->(num){ num.odd? } do |num|
+      "Odd"
+    end
+
+    with_params ->(num){ num.even? } do |num|
+      "Even"
+    end
+  end
+end
+
+dummy = Dummy.new
+dummy.hello(1) #=> 'Odd'
+dummy.hello(2) #=> 'Even'
+dummy.hello(100) #> 'Even'
+```
+
+It also support __functor__ fibonnaci with recursive method, but kinda reversed on method definition.
+``` ruby
+class Dummy
+  include Loverload
+
+  def_overload :fibonnaci do
+    with_params 1 do |n|
+      1
+    end
+
+    with_params 0 do |n|
+      0
+    end
+
+    with_params Integer do |n|
+      fibonnaci(n - 1) + fibonnaci(n - 2)
+    end
+  end
+end
+
+dummy = Dummy.new
+
+[*0..10].map(&dummy.method(:fibonnaci)) #=> [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+```
+
 ## TODO
-- Make it less ugly
+- Cache?
 
 ## NOTES
 Couple weeks ago, while searching for the same library, I found yanked gem called [overload](http://rubygems.org/gems/overload) from 2009, it's such an coincidence that we used similar implementation, inside it's readme, the author mentioned [functor](https://github.com/waves/functor), similar gem with different approach. Then I decided to change __loverload__ implementation using __functor__ approach, an simple but expensive approach.

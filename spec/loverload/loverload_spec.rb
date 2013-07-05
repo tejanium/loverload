@@ -28,6 +28,22 @@ describe Loverload do
     dummy.hello('Teja', 21).should eql 'Hello Teja Age 21'
   end
 
+  it "raise no method error" do
+    class Dummy
+      include Loverload
+
+      def_overload :hello do
+        with_params Fixnum do |n|
+          "Hello"
+        end
+      end
+    end
+
+    dummy = Dummy.new
+    dummy.hello(1).should eql 'Hello'
+    expect{ dummy.hello('Teja') }.to raise_error
+  end
+
   it "makes your code even more magical" do
     class Dummy
       include Loverload
@@ -283,5 +299,53 @@ describe Loverload do
     dummy = Dummy2.new
     dummy.hello(1).should eql '1'
     dummy.hello(2).should eql '2'
+  end
+
+  it "has `guard` signature method like functor" do
+    class Dummy
+      include Loverload
+
+      def_overload :hello do
+        with_params ->(num){ num.odd? } do |num|
+          "Odd"
+        end
+
+        with_params ->(num){ num.even? } do |num|
+          "Even"
+        end
+      end
+    end
+
+    dummy = Dummy.new
+    dummy.hello(1).should eql 'Odd'
+    dummy.hello(2).should eql 'Even'
+    dummy.hello(100).should eql 'Even'
+  end
+
+  it "can do fibonnaci like functor" do
+    # f.given( Integer ) { | n | f.call( n - 1 ) + f.call( n - 2 ) }
+    # f.given( 0 ) { |x| 0 }
+    # f.given( 1 ) { |x| 1 }
+
+    class Dummy
+      include Loverload
+
+      def_overload :fibonnaci do
+        with_params 1 do |n|
+          1
+        end
+
+        with_params 0 do |n|
+          0
+        end
+
+        with_params Integer do |n|
+          fibonnaci(n - 1) + fibonnaci(n - 2)
+        end
+      end
+    end
+
+    dummy = Dummy.new
+    [*0..10].map(&dummy.method(:fibonnaci)).should eql [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
   end
 end
