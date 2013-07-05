@@ -1,6 +1,8 @@
 require 'loverload'
 
 describe Loverload do
+  after { Dummy.send :remove_instance_variable, :@__dictionary__ }
+
   it "makes your code more magical" do
     class Dummy
       include Loverload
@@ -206,5 +208,80 @@ describe Loverload do
     end
 
     Dummy.hello.should eql 'Hello Nobody'
+  end
+
+  it "can use immediate value" do
+    class Dummy
+      include Loverload
+
+      def_overload :hello do
+        with_params 1 do |num|
+          "One"
+        end
+
+        with_params 2 do |num|
+          "Two"
+        end
+      end
+    end
+
+    dummy = Dummy.new
+    dummy.hello(1).should eql 'One'
+    dummy.hello(2).should eql 'Two'
+  end
+
+  it "works with inheritance" do
+    class Dummy
+      include Loverload
+
+      def_overload :hello do
+        with_params 1 do |num|
+          "One"
+        end
+
+        with_params 2 do |num|
+          "Two"
+        end
+      end
+    end
+
+    class Dummy2 < Dummy
+    end
+
+    dummy = Dummy2.new
+    dummy.hello(1).should eql 'One'
+    dummy.hello(2).should eql 'Two'
+  end
+
+  it "works with inheritance and overrides" do
+    class Dummy
+      include Loverload
+
+      def_overload :hello do
+        with_params 1 do |num|
+          "One"
+        end
+
+        with_params 2 do |num|
+          "Two"
+        end
+      end
+    end
+
+    class Dummy2 < Dummy
+      def_overload :hello do
+        with_params 1 do |num|
+          "1"
+        end
+
+        with_params 2 do |num|
+          "2"
+        end
+      end
+    end
+
+    dummy = Dummy2.new
+    dummy.hello(1).should eql '1'
+    dummy.hello(2).should eql '2'
   end
 end
