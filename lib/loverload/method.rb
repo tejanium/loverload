@@ -15,16 +15,15 @@ module Loverload
     end
 
     def overload instance, *args, &block
-      args << Block.new(&block) if block_given?
-      found = find(*args)
-      found_proc = Proc.new do |*args|
-        if args.last.is_a?(::Loverload::Block)
-          found.call *args, &(args.pop.block)
-        else
-          found.call *args
+      if block_given?
+        args << Block.new(&block) 
+        found = find(*args)
+        instance.instance_exec *args do |*args|
+          found.call(*args, &(args.pop.block))
         end
+      else
+        instance.instance_exec *args, &find(*args)
       end
-      instance.instance_exec *args, &found_proc
     end
 
     private
