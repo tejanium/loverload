@@ -348,4 +348,30 @@ describe Loverload do
     dummy = Dummy.new
     [*0..10].map(&dummy.method(:fibonnaci)).should eql [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
   end
+
+  it "can pass lambda and yielded" do
+    class Dummy
+      include Loverload
+
+      def_overload :pass_block do
+        with_params Proc do |blok|
+          blok.call
+        end
+
+        with_params String, Proc do |append_me, blok|
+          blok.call(append_me)
+        end
+      end
+    end
+
+    dummy = Dummy.new
+
+    expect{ dummy.pass_block('Hello from lambda') }.to raise_error
+
+    dummy.pass_block(lambda{ 'Hello from lambda' }).should eql 'Hello from lambda'
+    dummy.pass_block(->{ 'Hello from lambda' }).should eql 'Hello from lambda'
+    dummy.pass_block( Proc.new{ 'Hello from lambda' }).should eql 'Hello from lambda'
+
+    dummy.pass_block('Append me', lambda{ |s| "#{ s } and Hello from lambda" }).should eql 'Append me and Hello from lambda'
+  end
 end

@@ -9,7 +9,7 @@ module Loverload
   end
 
   module ClassMethods
-    def def_overload method_name_or_class, method_name = NULL, &with_params_block
+    def def_overload(method_name_or_class, method_name = NULL, &with_params_block)
       if method_name_or_class.is_a?(Class) && method_name != NULL
         method = Method.new(method_name_or_class, method_name, &with_params_block)
 
