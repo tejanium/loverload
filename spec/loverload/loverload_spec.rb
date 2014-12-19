@@ -246,6 +246,28 @@ describe Loverload do
     dummy.hello(2).should eql 'Two'
   end
 
+  it "supports blocks" do
+    class Dummy
+      include Loverload
+
+      def_overload :hello do
+        with_params String do |s|
+          "Arg 1: #{s}. No block."
+        end
+
+        with_params String, Block do |s, &block|
+          "Arg 1: #{s}. Block present; results in: #{block.yield}."
+        end
+      end
+    end
+
+    dummy = Dummy.new
+    dummy.hello('str1').should eql 'Arg 1: str1. No block.'
+    dummy.hello 'str2' do
+      'str3' 
+    end.should eql 'Arg 1: str2. Block present; results in: str3.'
+  end
+
   it "works with inheritance" do
     class Dummy
       include Loverload

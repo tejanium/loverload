@@ -8,12 +8,22 @@ module Loverload
       instance_eval(&with_params_block)
     end
 
-    def with_params(*pars, &block)
-      dictionary[method_signature(block.arity, *pars)] = block
+    def with_params *pars, &block
+      arg_count = block.arity
+      arg_count += 1 if pars.last == ::Loverload::Block
+      dictionary[method_signature(arg_count, *pars)] = block
     end
 
-    def overload(instance, *args)
-      instance.instance_exec *args, &find(*args)
+    def overload instance, *args, &block
+      if block_given?
+        args << Block.new(&block)
+        found = find(*args)
+        instance.instance_exec *args do |*args|
+          found.call(*args, &(args.pop.block))
+        end
+      else
+        instance.instance_exec *args, &find(*args)
+      end
     end
 
     private
